@@ -3,6 +3,10 @@ import { supabase } from '../lib/supabaseClient';
 
 const BookingForm = ({ packageId, packageType, onBookingComplete }) => {
   const requiresOccupants = packageType.toLowerCase().includes("double-room") || packageType.toLowerCase().includes("triple-room") || packageType.toLowerCase().includes("quadruple-room");
+  
+  // Controlla se il pacchetto NON è l'assemblea
+  const isAssemblyPackage = packageType.toLowerCase().includes("assemblea");
+  const requiresCantinaPackage = !isAssemblyPackage;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -30,6 +34,10 @@ const BookingForm = ({ packageId, packageType, onBookingComplete }) => {
       ? formData.occupants.split(',').map(name => name.trim()) 
       : null;
 
+    const cantinaPackage = requiresCantinaPackage 
+      ? formData.cantina_package_type 
+      : null;
+
     const { data, error } = await supabase.rpc('book_package', {
       p_package_id: packageId,
       p_name: formData.name,
@@ -39,7 +47,7 @@ const BookingForm = ({ packageId, packageType, onBookingComplete }) => {
       p_club: formData.club,
       p_role: formData.role,
       p_occupants: occupants,
-      p_cantina_package_type: formData.cantina_package_type,
+      p_cantina_package_type: cantinaPackage,
     });
 
     if (error) {
@@ -67,13 +75,17 @@ const BookingForm = ({ packageId, packageType, onBookingComplete }) => {
         <input name="occupants" onChange={handleChange} placeholder="Nomi compagni di stanza (separati da virgola)" />
       )}
 
-      <select name="cantina_package_type" onChange={handleChange} required>
-        <option value="">Seleziona un pacchetto per Morbegno in Cantina</option>
-        <option value="oro">Oro</option>
-        <option value="rosso">Rosso</option>
-        <option value="bianco">Bianco</option>
-        <option value="analcolico">Analcolico</option>
-      </select>
+      {/* Mostra questo campo solo se non è un pacchetto assemblea */}
+      {requiresCantinaPackage && (
+        <select name="cantina_package_type" onChange={handleChange} required>
+          <option value="">Seleziona un pacchetto per Morbegno in Cantina</option>
+          <option value="none">Nessun pacchetto</option>
+          <option value="oro">Oro</option>
+          <option value="rosso">Rosso</option>
+          <option value="bianco">Bianco</option>
+          <option value="analcolico">Analcolico</option>
+        </select>
+      )}
 
       <button type="submit" disabled={isLoading}>
         {isLoading ? 'In corso...' : 'Conferma Prenotazione'}
