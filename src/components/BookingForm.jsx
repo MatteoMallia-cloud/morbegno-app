@@ -4,9 +4,9 @@ import { supabase } from '../lib/supabaseClient';
 const BookingForm = ({ packageId, packageType, onBookingComplete }) => {
   const requiresOccupants = packageType.toLowerCase().includes("double-room") || packageType.toLowerCase().includes("triple-room") || packageType.toLowerCase().includes("quadruple-room");
   
-  // Controlla se il pacchetto NON è l'assemblea
   const isAssemblyPackage = packageType.toLowerCase().includes("assemblea");
-  const requiresCantinaPackage = !isAssemblyPackage;
+  const isDinnerPackage = packageType.toLowerCase().includes("cena");
+  const requiresCantinaPackage = !isAssemblyPackage && !isDinnerPackage;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -20,6 +20,7 @@ const BookingForm = ({ packageId, packageType, onBookingComplete }) => {
   });
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -55,11 +56,33 @@ const BookingForm = ({ packageId, packageType, onBookingComplete }) => {
     } else {
       setMessage(data[0].message);
       if (data[0].success) {
-        onBookingComplete();
+        setBookingConfirmed(true);
       }
     }
     setIsLoading(false);
   };
+
+  if (bookingConfirmed) {
+    return (
+      <div style={{ padding: '20px', border: '1px solid #4CAF50', borderRadius: '5px', backgroundColor: '#e8f5e9' }}>
+        <h4>Prenotazione confermata!</h4>
+        <p>Grazie, **{formData.name}**! La tua prenotazione è stata registrata con successo.</p>
+        <hr style={{ borderColor: '#4CAF50' }}/>
+        <h5>Riepilogo Dettagli:</h5>
+        <ul>
+          <li>**Pacchetto:** {packageType}</li>
+          <li>**Email:** {formData.email}</li>
+          <li>**Telefono:** {formData.phone}</li>
+          <li>**Distretto:** {formData.district}</li>
+          <li>**Club:** {formData.club}</li>
+          <li>**Ruolo:** {formData.role}</li>
+          {requiresOccupants && <li>**Compagni di stanza:** {formData.occupants}</li>}
+          {requiresCantinaPackage && <li>**Pacchetto Cantina:** {formData.cantina_package_type || "Nessuno"}</li>}
+        </ul>
+        <button onClick={onBookingComplete}>Torna ai pacchetti</button>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '5px' }}>
@@ -69,13 +92,12 @@ const BookingForm = ({ packageId, packageType, onBookingComplete }) => {
       <input type="tel" name="phone" onChange={handleChange} placeholder="Numero di telefono" />
       <input name="district" onChange={handleChange} placeholder="Distretto" required />
       <input name="club" onChange={handleChange} placeholder="Club" required />
-      <input name="role" onChange={handleChange} placeholder="Ruolo" required />
+      <input type="role" name="role" onChange={handleChange} placeholder="Ruolo" required />
 
       {requiresOccupants && (
         <input name="occupants" onChange={handleChange} placeholder="Nomi compagni di stanza (separati da virgola)" />
       )}
 
-      {/* Mostra questo campo solo se non è un pacchetto assemblea */}
       {requiresCantinaPackage && (
         <select name="cantina_package_type" onChange={handleChange} required>
           <option value="">Seleziona un pacchetto per Morbegno in Cantina</option>
