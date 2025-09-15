@@ -62,6 +62,18 @@ const BookingForm = ({ packageId, packageType, onBookingComplete }) => {
     setIsLoading(false);
   };
 
+// Calcolo del costo in base al pacchetto
+  let cost = 0;
+  let cantinaPackageCostMessage = "";
+  if (packageType.toLowerCase().includes("room")) {
+    cost = 145;
+    cantinaPackageCostMessage = " (a cui va aggiunto il costo per il pacchetto Cantina scelto)";
+  } else if (packageType.toLowerCase().includes("assemblea-pranzo")) {
+    cost = 35;
+  } else if (packageType.toLowerCase().includes("assemblea")) {
+    cost = 0;
+  }
+
   if (bookingConfirmed) {
     return (
       <div style={{ padding: '20px', border: '1px solid #4CAF50', borderRadius: '5px', backgroundColor: '#e8f5e9' }}>
@@ -79,6 +91,12 @@ const BookingForm = ({ packageId, packageType, onBookingComplete }) => {
           {requiresOccupants && <li>**Compagni di stanza:** {formData.occupants}</li>}
           {requiresCantinaPackage && <li>**Pacchetto Cantina:** {formData.cantina_package_type || "Nessuno"}</li>}
         </ul>
+        <div style={{ fontWeight: 'bold', marginTop: '20px' }}>
+          Costo a persona: {cost}€{cantinaPackageCostMessage}
+        </div>
+        <p style={{ marginTop: '5px', fontSize: '0.9em' }}>
+          *Nota: per i pacchetti con pernottamento, il costo del pacchetto in cantina va calcolato a parte.
+        </p>
         <button onClick={onBookingComplete}>Torna ai pacchetti</button>
       </div>
     );
