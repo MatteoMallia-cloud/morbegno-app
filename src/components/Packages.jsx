@@ -1,32 +1,40 @@
 // src/components/Packages.jsx
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import BookingForm from './BookingForm'; // Importa il nuovo componente
+import BookingForm from './BookingForm';
+import '../App.css';
 
 const Packages = () => {
   const [packages, setPackages] = useState([]);
   const [selectedPackage, setSelectedPackage] = useState(null);
-
-  const fetchPackages = async () => {
-    const { data, error } = await supabase
-      .from('availability')
-      .select('*');
-    if (error) {
-      console.error('Errore nel recupero dei pacchetti:', error);
-    }
-    if (data) {
-      setPackages(data);
-    }
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPackages();
   }, []);
 
-  const handleBookingComplete = () => {
-    setSelectedPackage(null); // Nasconde il form
-    fetchPackages(); // Aggiorna la lista dei pacchetti
+  const fetchPackages = async () => {
+    const { data, error } = await supabase
+      .from('availability')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching packages:', error);
+    } else {
+      setPackages(data);
+    }
+    setLoading(false);
   };
+
+  const handleBookingComplete = () => {
+    setSelectedPackage(null);
+    fetchPackages();
+  };
+
+  if (loading) {
+    return <div>Caricamento pacchetti...</div>;
+  }
 
   return (
     <div>
@@ -38,22 +46,48 @@ const Packages = () => {
           onBookingComplete={handleBookingComplete}
         />
       ) : (
-        <div>
-          {packages.map((pkg) => (
-            <div key={pkg.id} style={{ border: '1px solid #ddd', padding: '10px', margin: '10px', borderRadius: '5px' }}>
-              <h3>{pkg.room_type}</h3>
-              {pkg.available_slots > 0 ? (
-                <>
-                  <p>Disponibilità: {pkg.available_slots}</p>
-                  <button onClick={() => setSelectedPackage(pkg)}>
-                    Prenota ora
-                  </button>
-                </>
-              ) : (
-                <p>Pacchetto esaurito</p>
-              )}
-            </div>
-          ))}
+        <div className="packages-container">
+          {packages.map((pkg) => {
+            let price = "";
+            if (pkg.room_type.toLowerCase().includes("room")) {
+                price = "145€";
+            } else if (pkg.room_type.toLowerCase().includes("pranzo")) {
+                price = "35€";
+            } else if (pkg.room_type.toLowerCase().includes("assemblea")) {
+                price = "Gratuito";
+            }
+
+            return (
+              <div key={pkg.id} className="package-card">
+                <h3>{pkg.room_type}</h3>
+                {pkg.available_slots > 0 ? (
+                  <>
+                    <p>Costo: {price}</p>
+                    <p>Disponibilità: {pkg.available_slots}</p>
+                    {/* Bottone più visibile */}
+                    <button 
+                      onClick={() => setSelectedPackage(pkg)} 
+                      style={{ 
+                        marginTop: '15px', 
+                        padding: '10px 20px', 
+                        fontSize: '1em', 
+                        fontWeight: 'bold',
+                        color: 'white',
+                        backgroundColor: '#6a1b9a', // Colore viola
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Prenota
+                    </button>
+                  </>
+                ) : (
+                  <p>Pacchetto esaurito</p>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

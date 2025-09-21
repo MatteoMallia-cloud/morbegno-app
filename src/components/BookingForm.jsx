@@ -1,3 +1,4 @@
+// src/components/BookingForm.jsx
 import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
@@ -62,13 +63,13 @@ const BookingForm = ({ packageId, packageType, onBookingComplete }) => {
     setIsLoading(false);
   };
 
-// Calcolo del costo in base al pacchetto
+  // Calcolo del costo in base al pacchetto
   let cost = 0;
   let cantinaPackageCostMessage = "";
   if (packageType.toLowerCase().includes("room")) {
     cost = 145;
     cantinaPackageCostMessage = " (a cui va aggiunto il costo per il pacchetto Cantina scelto)";
-  } else if (packageType.toLowerCase().includes("assemblea-pranzo")) {
+  } else if (packageType.toLowerCase().includes("pranzo")) {
     cost = 35;
   } else if (packageType.toLowerCase().includes("assemblea")) {
     cost = 0;
@@ -97,6 +98,9 @@ const BookingForm = ({ packageId, packageType, onBookingComplete }) => {
         <p style={{ marginTop: '5px', fontSize: '0.9em' }}>
           *Nota: per i pacchetti con pernottamento, il costo del pacchetto in cantina va calcolato a parte.
         </p>
+        <p style={{ marginTop: '20px', color: '#6a1b9a', fontWeight: 'bold' }}>
+          Un membro della segreteria distrettuale/tesoriere distrettuale ti contatterà entro 3 giorni per confermare la prenotazione e il pagamento.
+        </p>
         <button onClick={onBookingComplete}>Torna ai pacchetti</button>
       </div>
     );
@@ -120,10 +124,10 @@ const BookingForm = ({ packageId, packageType, onBookingComplete }) => {
         <select name="cantina_package_type" onChange={handleChange} required>
           <option value="">Seleziona un pacchetto per Morbegno in Cantina</option>
           <option value="none">Nessun pacchetto</option>
-          <option value="oro">Oro</option>
-          <option value="rosso">Rosso</option>
-          <option value="bianco">Bianco</option>
-          <option value="analcolico">Analcolico</option>
+          <option value="oro">Giro Oro - 54€</option>
+          <option value="bolle">Giro Bolle - 39€</option>
+          <option value="rosso">Giro Rosso - 39€</option>
+          <option value="rock">Giro Rock - 39€</option>
         </select>
       )}
 
